@@ -1,0 +1,44 @@
+{
+  "test_case_name": "eip6780_selfdestruct_same_tx_vs_preexisting_contract",
+  "eip": 6780,
+  "source_reference": "Inspired by ethereum/execution-spec-tests reentrancy suicide revert test coverage for EIP-6780 (not a verbatim copy)",
+  "description": "Contract C is deployed via CREATE2 and SELFDESTRUCTs within the same transaction, targeting an external escrow vault. Contract D, which has existed on-chain for 100+ blocks, is also forced to SELFDESTRUCT in the same block. Per EIP-6780, only C (created in the same tx) should actually be removed and have its balance wiped; D should just have its balance transferred while remaining LIVE with code intact.",
+  "pre_state": {
+    "0x4000000000000000000000000000000000000004": {
+      "nonce": "5",
+      "balance": "5000000000000000000",
+      "code": "0x6000355415600c57fd5b73900000000000000000000000000000000000009ff",
+      "storage": {}
+    },
+    "0x9000000000000000000000000000000000000009": {
+      "nonce": "0",
+      "balance": "0",
+      "code": "0x",
+      "storage": {}
+    }
+  },
+  "transaction": {
+    "caller": "0x1000000000000000000000000000000000000001",
+    "to": null,
+    "data": "0x",
+    "gas_limit": "500000",
+    "value": "0",
+    "note": "to=null with a CREATE2-style init deploying Contract C, which immediately SELFDESTRUCTs to the escrow address; Contract D's SELFDESTRUCT is triggered separately in the same block per description above."
+  },
+  "expected_lifecycle_status": {
+    "contract_c_newly_created_same_tx": {
+      "lifecycle_status": 2,
+      "lifecycle_status_name": "SELFDESTRUCT_PENDING",
+      "balance_after": "0",
+      "code_removed": true
+    },
+    "0x4000000000000000000000000000000000000004": {
+      "lifecycle_status": 0,
+      "lifecycle_status_name": "LIVE",
+      "code_removed": false,
+      "note": "Only the balance mutation should be recorded; code and account must remain intact under EIP-6780 since D pre-existed this transaction."
+    }
+  },
+  "expected_ssr_root": null,
+  "expected_ssr_root_note": "TODO: fill in once a real Geth or Reth extractor exists to compute this (see docs/implementation_roadmap.md Phase 2)."
+}

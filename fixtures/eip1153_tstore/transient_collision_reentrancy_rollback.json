@@ -1,0 +1,34 @@
+{
+  "test_case_name": "eip1153_transient_collision_and_reentrancy_rollback",
+  "eip": 1153,
+  "source_reference": "Inspired by ethereum/execution-spec-tests, tests/cancun/eip1153_tstore (not a verbatim copy)",
+  "description": "Contract A TSTOREs slot 0x01=0xAA, then DELEGATECALLs into Contract B which TSTOREs slot 0x01=0xBB and slot 0x02=0xCC before REVERTing. B's transient writes must be discarded; only A's original write should survive extraction.",
+  "pre_state": {
+    "0x1000000000000000000000000000000000000001": {
+      "nonce": "1",
+      "balance": "10000000000000000000",
+      "code": "0x600060005f5f600460007320000000000000000000000000000000000000026103e8f15f5f55",
+      "storage": {}
+    },
+    "0x2000000000000000000000000000000000000002": {
+      "nonce": "1",
+      "balance": "0",
+      "code": "0x60aa60005c60bb60005c60005d600055fd",
+      "storage": {}
+    }
+  },
+  "transaction": {
+    "caller": "0x1000000000000000000000000000000000000001",
+    "to": "0x1000000000000000000000000000000000000001",
+    "data": "0x",
+    "gas_limit": "200000",
+    "value": "0"
+  },
+  "expected_transient_mutations": {
+    "0x1000000000000000000000000000000000000001": [
+      {"slot": "0x01", "value": "0xAA"}
+    ]
+  },
+  "expected_ssr_root": null,
+  "expected_ssr_root_note": "TODO: fill in once a real Geth or Reth extractor exists to compute this (see docs/implementation_roadmap.md Phase 2)."
+}

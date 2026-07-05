@@ -1,0 +1,29 @@
+{
+  "test_case_name": "eip1153_out_of_gas_during_transient_sequence",
+  "eip": 1153,
+  "source_reference": "Inspired by ethereum/execution-spec-tests coverage of TSTORE/TLOAD gas-exhaustion paths (test_run_until_out_of_gas), not a verbatim copy",
+  "description": "A contract performs a sequence of TSTORE operations across multiple slots, then runs out of gas partway through a subsequent call. Verifies the extractor only reflects transient writes that were actually committed to the frame before the OOG halt, and that no partial/uncommitted writes leak into the SSR.",
+  "pre_state": {
+    "0x3000000000000000000000000000000000000003": {
+      "nonce": "1",
+      "balance": "1000000000000000000",
+      "code": "0x60015f5d60025f5d5f5f60003a600061fffff1",
+      "storage": {}
+    }
+  },
+  "transaction": {
+    "caller": "0x9000000000000000000000000000000000000009",
+    "to": "0x3000000000000000000000000000000000000003",
+    "data": "0x",
+    "gas_limit": "30000",
+    "value": "0"
+  },
+  "expected_transient_mutations": {
+    "0x3000000000000000000000000000000000000003": [
+      {"slot": "0x00", "value": "0x01"},
+      {"slot": "0x01", "value": "0x02"}
+    ]
+  },
+  "expected_ssr_root": null,
+  "expected_ssr_root_note": "TODO: fill in once a real Geth or Reth extractor exists to compute this (see docs/implementation_roadmap.md Phase 2)."
+}
