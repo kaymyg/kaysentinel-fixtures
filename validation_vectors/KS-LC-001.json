@@ -1,0 +1,77 @@
+{
+  "vector_id": "KS-LC-001",
+  "category": "Lifecycle",
+  "compliance_level": "MUST",
+  "expected_result": "PASS",
+  "description": "An account is deployed via CREATE2, self-destructs within the same transaction (fully removed per EIP-6780 since it was created this tx), and is then redeployed at the same address via a second same-tx CREATE2. The final SSR must reflect a real net delta (nonexistent -> existing) rather than being omitted by create-then-destroy pruning, since a persistent account remains at the transaction boundary.",
+  "spec_gap_note": "validation_vector_spec.md's Fork Invariant governs lifecycle mechanics per fork_identifier, but no journal_action explicitly represents CREATE/SELFDESTRUCT -- lifecycle here is inferred from the combination of NONCE_MUTATION/CODE_MUTATION/BALANCE_MUTATION events on the same address. This vector is also the worked example motivating an explicit 'unless recreated later in the same transaction' clause for the create-then-destroy omission rule.",
+  "specification_version": "1.0.0",
+  "fork_identifier": "CANCUN",
+  "pre_state": {
+    "0x1000000000000000000000000000000000000001": {
+      "nonce": 10,
+      "balance": "20000000000000000000",
+      "code": "0x",
+      "storage": {}
+    },
+    "0x5000000000000000000000000000000000000005": {
+      "nonce": 0,
+      "balance": "0",
+      "code": "0x",
+      "storage": {}
+    }
+  },
+  "journal_mutation_sequence": [
+    { "step": 1, "context_depth": 2, "journal_action": "CODE_MUTATION", "address": "0x4000000000000000000000000000000000000004", "new_code": "0x6001600155" },
+    { "step": 2, "context_depth": 2, "journal_action": "NONCE_MUTATION", "address": "0x4000000000000000000000000000000000000004", "new_nonce": 1 },
+    { "step": 3, "context_depth": 2, "journal_action": "BALANCE_MUTATION", "address": "0x4000000000000000000000000000000000000004", "new_balance": "3000000000000000000" },
+    { "step": 4, "context_depth": 2, "journal_action": "CODE_MUTATION", "address": "0x4000000000000000000000000000000000000004", "new_code": "0x" },
+    { "step": 5, "context_depth": 2, "journal_action": "NONCE_MUTATION", "address": "0x4000000000000000000000000000000000000004", "new_nonce": 0 },
+    { "step": 6, "context_depth": 2, "journal_action": "BALANCE_MUTATION", "address": "0x4000000000000000000000000000000000000004", "new_balance": "0" },
+    { "step": 7, "context_depth": 2, "journal_action": "BALANCE_MUTATION", "address": "0x5000000000000000000000000000000000000005", "new_balance": "3000000000000000000" },
+    { "step": 8, "context_depth": 2, "journal_action": "CODE_MUTATION", "address": "0x4000000000000000000000000000000000000004", "new_code": "0x6001600155" },
+    { "step": 9, "context_depth": 2, "journal_action": "NONCE_MUTATION", "address": "0x4000000000000000000000000000000000000004", "new_nonce": 1 },
+    { "step": 10, "context_depth": 2, "journal_action": "BALANCE_MUTATION", "address": "0x4000000000000000000000000000000000000004", "new_balance": "2000000000000000000" },
+    { "step": 11, "context_depth": 1, "journal_action": "NONCE_MUTATION", "address": "0x1000000000000000000000000000000000000001", "new_nonce": 11 },
+    { "step": 12, "context_depth": 1, "journal_action": "BALANCE_MUTATION", "address": "0x1000000000000000000000000000000000000001", "new_balance": "14999999999999950000" }
+  ],
+  "expected_normalized_ssr": {
+    "consensus_outcome": "Included",
+    "execution_outcome": "Success",
+    "account_deltas": [
+      {
+        "address": "0x1000000000000000000000000000000000000001",
+        "nonce": { "original": 10, "current": 11 },
+        "balance": { "original": "20000000000000000000", "current": "14999999999999950000" },
+        "code_hash": {
+          "original": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+          "current": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+        },
+        "storage_updates": []
+      },
+      {
+        "address": "0x4000000000000000000000000000000000000004",
+        "nonce": { "original": 0, "current": 1 },
+        "balance": { "original": "0", "current": "2000000000000000000" },
+        "code_hash": {
+          "original": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+          "current": "0xf8b07b083341d3a7667e38718918d301f47d62f82d8186f4ccd7ed7424a64ef3"
+        },
+        "storage_updates": [],
+        "must_not_be_omitted": true,
+        "reason": "a persistent account remains at the transaction boundary, so the create-then-destroy omission rule does not apply even though this address was also created+destroyed earlier in this same transaction"
+      },
+      {
+        "address": "0x5000000000000000000000000000000000000005",
+        "nonce": { "original": 0, "current": 0 },
+        "balance": { "original": "0", "current": "3000000000000000000" },
+        "code_hash": {
+          "original": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+          "current": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+        },
+        "storage_updates": []
+      }
+    ]
+  },
+  "notes": "original/current code_hash for the nonexistent-account case uses EMPTY_CODE_HASH rather than null: per EIP-161 state clearing, an account with nonce 0, balance 0, and empty code is indistinguishable from a nonexistent account, so this is the correct representation under this schema (which has no explicit null/nonexistent account type). The 0x4...004 current code_hash 0xf8b07b08... is the real, independently-recomputed keccak256 of the placeholder init bytecode 0x6001600155 used in this fixture -- not a fabricated value. Sender balance bundles the 5 ETH sent across both CREATE2 endowments plus illustrative gas billing, not precisely metered."
+}

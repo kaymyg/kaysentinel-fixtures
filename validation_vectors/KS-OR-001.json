@@ -1,0 +1,85 @@
+{
+  "vector_id": "KS-OR-001",
+  "category": "Ordering",
+  "compliance_level": "MUST",
+  "expected_result": "PASS",
+  "description": "Enforces strict ascending unsigned byte-wise ordering across accounts (C,A,B,D) and nested storage slots (99,01,AA,00) arriving out of order.",
+  "specification_version": "1.0.0",
+  "fork_identifier": "PRAGUE",
+  "pre_state": {
+    "0xcccccccccccccccccccccccccccccccccccccccc": { "nonce": 0, "balance": "0", "code": "0x", "storage": {} },
+    "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": { "nonce": 0, "balance": "0", "code": "0x", "storage": {} },
+    "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb": { "nonce": 0, "balance": "0", "code": "0x", "storage": {} },
+    "0xdddddddddddddddddddddddddddddddddddddddd": { "nonce": 0, "balance": "0", "code": "0x", "storage": {} }
+  },
+  "journal_mutation_sequence": [
+    { "step": 1, "context_depth": 1, "journal_action": "STORAGE_MUTATION", "address": "0xcccccccccccccccccccccccccccccccccccccccc", "slot": "0x0000000000000000000000000000000000000000000000000000000000000099", "new_value": "0x0000000000000000000000000000000000000000000000000000000000000111" },
+    { "step": 2, "context_depth": 1, "journal_action": "STORAGE_MUTATION", "address": "0xcccccccccccccccccccccccccccccccccccccccc", "slot": "0x0000000000000000000000000000000000000000000000000000000000000001", "new_value": "0x0000000000000000000000000000000000000000000000000000000000000222" },
+    { "step": 3, "context_depth": 1, "journal_action": "STORAGE_MUTATION", "address": "0xdddddddddddddddddddddddddddddddddddddddd", "slot": "0x00000000000000000000000000000000000000000000000000000000000000aa", "new_value": "0x0000000000000000000000000000000000000000000000000000000000000333" },
+    { "step": 4, "context_depth": 1, "journal_action": "STORAGE_MUTATION", "address": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "slot": "0x0000000000000000000000000000000000000000000000000000000000000000", "new_value": "0x0000000000000000000000000000000000000000000000000000000000000444" },
+    { "step": 5, "context_depth": 1, "journal_action": "STORAGE_MUTATION", "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "slot": "0x00000000000000000000000000000000000000000000000000000000000000aa", "new_value": "0x0000000000000000000000000000000000000000000000000000000000000555" }
+  ],
+  "expected_normalized_ssr": {
+    "consensus_outcome": "Included",
+    "execution_outcome": "Success",
+    "account_deltas": [
+      {
+        "address": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "nonce": { "original": 0, "current": 0 },
+        "balance": { "original": "0", "current": "0" },
+        "code_hash": { "original": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", "current": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470" },
+        "storage_updates": [
+          {
+            "slot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "original": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "current": "0x0000000000000000000000000000000000000000000000000000000000000444"
+          }
+        ]
+      },
+      {
+        "address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "nonce": { "original": 0, "current": 0 },
+        "balance": { "original": "0", "current": "0" },
+        "code_hash": { "original": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", "current": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470" },
+        "storage_updates": [
+          {
+            "slot": "0x00000000000000000000000000000000000000000000000000000000000000aa",
+            "original": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "current": "0x0000000000000000000000000000000000000000000000000000000000000555"
+          }
+        ]
+      },
+      {
+        "address": "0xcccccccccccccccccccccccccccccccccccccccc",
+        "nonce": { "original": 0, "current": 0 },
+        "balance": { "original": "0", "current": "0" },
+        "code_hash": { "original": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", "current": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470" },
+        "storage_updates": [
+          {
+            "slot": "0x0000000000000000000000000000000000000000000000000000000000000001",
+            "original": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "current": "0x0000000000000000000000000000000000000000000000000000000000000222"
+          },
+          {
+            "slot": "0x0000000000000000000000000000000000000000000000000000000000000099",
+            "original": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "current": "0x0000000000000000000000000000000000000000000000000000000000000111"
+          }
+        ]
+      },
+      {
+        "address": "0xdddddddddddddddddddddddddddddddddddddddd",
+        "nonce": { "original": 0, "current": 0 },
+        "balance": { "original": "0", "current": "0" },
+        "code_hash": { "original": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470", "current": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470" },
+        "storage_updates": [
+          {
+            "slot": "0x00000000000000000000000000000000000000000000000000000000000000aa",
+            "original": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "current": "0x0000000000000000000000000000000000000000000000000000000000000333"
+          }
+        ]
+      }
+    ]
+  }
+}
