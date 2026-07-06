@@ -1,0 +1,43 @@
+{
+  "vector_id": "KS-ST-001",
+  "category": "Storage",
+  "compliance_level": "MUST",
+  "expected_result": "PASS",
+  "description": "An A -> B -> C -> A storage mutation loop on a single slot must be completely pruned by identity-transition pruning (validation_vector_spec.md Minimality Invariant). Sender nonce/balance billing deltas must still survive.",
+  "specification_version": "1.0.0",
+  "fork_identifier": "PRAGUE",
+  "pre_state": {
+    "0x1000000000000000000000000000000000000001": {
+      "nonce": 5,
+      "balance": "1000000000000000000",
+      "code": "0x",
+      "storage": {
+        "0x000000000000000000000000000000000000000000000000000000000000000a": "0x00000000000000000000000000000000000000000000000000000000000000ff"
+      }
+    }
+  },
+  "journal_mutation_sequence": [
+    { "step": 1, "context_depth": 1, "journal_action": "STORAGE_MUTATION", "address": "0x1000000000000000000000000000000000000001", "slot": "0x000000000000000000000000000000000000000000000000000000000000000a", "new_value": "0x00000000000000000000000000000000000000000000000000000000000000ee" },
+    { "step": 2, "context_depth": 1, "journal_action": "STORAGE_MUTATION", "address": "0x1000000000000000000000000000000000000001", "slot": "0x000000000000000000000000000000000000000000000000000000000000000a", "new_value": "0x0000000000000000000000000000000000000000000000000000000000000099" },
+    { "step": 3, "context_depth": 1, "journal_action": "STORAGE_MUTATION", "address": "0x1000000000000000000000000000000000000001", "slot": "0x000000000000000000000000000000000000000000000000000000000000000a", "new_value": "0x00000000000000000000000000000000000000000000000000000000000000ff" },
+    { "step": 4, "context_depth": 1, "journal_action": "NONCE_MUTATION", "address": "0x1000000000000000000000000000000000000001", "new_nonce": 6 },
+    { "step": 5, "context_depth": 1, "journal_action": "BALANCE_MUTATION", "address": "0x1000000000000000000000000000000000000001", "new_balance": "999999999999950000" }
+  ],
+  "expected_normalized_ssr": {
+    "consensus_outcome": "Included",
+    "execution_outcome": "Success",
+    "account_deltas": [
+      {
+        "address": "0x1000000000000000000000000000000000000001",
+        "nonce": { "original": 5, "current": 6 },
+        "balance": { "original": "1000000000000000000", "current": "999999999999950000" },
+        "code_hash": {
+          "original": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+          "current": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+        },
+        "storage_updates": []
+      }
+    ]
+  },
+  "notes": "code_hash is EMPTY_CODE_HASH (keccak256(''), independently recomputed and verified for this migration) since this account is an EOA with no code. storage_updates is [] (present, not omitted) because slot 0x0a returns to its original value 0xff -- an identity transition -- while the account itself still carries a real nonce/balance delta. Balance figures are illustrative gas billing, not precisely metered against a real EVM gas schedule."
+}
