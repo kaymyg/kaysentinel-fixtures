@@ -15,6 +15,9 @@ configs:
 
 # Kaysentinel Fixtures
 
+[![CI](https://github.com/kaymyg/kaysentinel-fixtures/actions/workflows/ci.yml/badge.svg)](https://github.com/kaymyg/kaysentinel-fixtures/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Curated differential-testing fixtures for the [Kaysentinel](https://huggingface.co/Sahek/kaysentinel) project. Each fixture describes a pre-state, a transaction, and the expected post-execution behavior that a compliant Geth-side and Reth-side SSR extractor must agree on (see the main repo's [`docs/differential_testing.md`](https://huggingface.co/Sahek/kaysentinel/blob/main/docs/differential_testing.md) for the design behind this).
 
 ## Status
